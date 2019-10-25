@@ -1,12 +1,18 @@
-define([
-	'core/js/adapt',
-	'core/js/views/componentView'
-], function(Adapt, ComponentView) {
+/*
+* adapt-tabs
+* Version - 0.0.0
+* License - http://github.com/adaptlearning/adapt_framework/LICENSE
+* Maintainers - kirsty hames <kirsty.hames@kineo.com>
+*/
+define(function(require) {
+
+	var ComponentView = require('coreViews/componentView');
+	var Adapt = require('coreJS/adapt');
 
 	var Tabs = ComponentView.extend({
 
 		events: {
-			'click .tabs-navigation-item': 'onTabItemClicked'
+			'click .tab-item': 'onTabItemClicked'
 		},
 		
 		preRender: function() {
@@ -16,7 +22,7 @@ define([
 			this.setReadyStatus();
 			this.setLayout();
 			this.listenTo(Adapt, 'device:resize', this.setLayout);
-			this.showContentItemAtIndex(0, true);
+			this.showContentItemAtIndex(0);
 			this.setTabSelectedAtIndex(0);
 		},
 
@@ -27,27 +33,33 @@ define([
 				this.$el.addClass("tab-layout-" + tabLayout);
 				if (tabLayout === 'top') {
 					this.setTabLayoutTop();
-					return;
-				}	
-				this.setTabLayoutLeft();
+				} else if (tabLayout === 'left') {
+					this.setTabLayoutLeft();
+				}                
 			} else {
 				this.$el.addClass("tab-layout-left");
 				this.setTabLayoutLeft();
-			}
+			}        	
 		},
 
 		setTabLayoutTop: function() {
 			var itemsLength = this.model.get('_items').length;
 			var itemWidth = 100 / itemsLength;
-
-			this.$('.tabs-navigation-item').css({
+			this.$('.tab-item').css({
 				width: itemWidth + '%'
+			});
+			this.$('.tabs-content-items').css({
+				height: 'auto'
 			});
 		},
 
 		setTabLayoutLeft: function() {
-			this.$('.tabs-navigation-item').css({
-				width: 100 + '%'
+			//var height = this.$('.tabs-tab-items').height();
+			//this.$('.tabs-content-items').css({
+			//	height: height + 'px'
+			//});
+			this.$('.tab-item').css({
+				width: 'auto'
 			});
 		},
 
@@ -59,37 +71,42 @@ define([
 			this.setVisited($(event.currentTarget).index());
 		},
 
-		showContentItemAtIndex: function(index, skipFocus) {
-			var $contentItems = this.$('.tab-content');
-
-			$contentItems.removeClass('active').velocity({
+		showContentItemAtIndex: function(index) {
+			this.$('.tab-content').velocity({
 				opacity: 0,
 				translateY: '20px'
 			}, {
-				duration: 0,
+				duration: 200,
 				display: 'none'
 			});
+			this.$('.tab-content-item-title-image').velocity({
+				scaleX: 0.9,
+				scaleY: 0.9
+			}, {
+				duration: 200
+			});
 
-			var $contentItem = $contentItems.eq(index);
+			var contentItem = this.$('.tab-content').eq(index);
+			var $contentItem = $(contentItem);
 			$contentItem.velocity({
 				opacity: 1,
 				translateY: '0'
 			}, {
-				duration: 300,
-				display: 'block',
-				complete: _.bind(complete,this)
+				duration: 400,
+				display: 'block'
 			});
-
-			function complete() {
-				if (skipFocus) return;
-	        	$contentItem.addClass('active').a11y_focus();
-			}
+			$contentItem.find('.tab-content-item-title-image').velocity({
+				scaleX: 1,
+				scaleY: 1
+			}, {
+				duration: 800
+			});
 		},
 
 		setTabSelectedAtIndex: function(index) {
-			var $navigationItem = this.$('.tabs-navigation-item-inner');
-			$navigationItem.removeClass('selected').eq(index).addClass('selected visited').attr('aria-label', this.model.get("_items")[index].tabTitle + ". Visited");
-			this.setVisited(index);
+			this.$('.tab-item').removeClass('selected');
+			this.$('.tab-item').eq(index).addClass('selected visited');
+			this.setVisited($(event.currentTarget).index());
 		},
 
 		setVisited: function(index) {
@@ -105,15 +122,15 @@ define([
 		},
 
 		checkCompletionStatus: function() {
-			if (this.getVisitedItems().length === this.model.get('_items').length) {
+			if (this.getVisitedItems().length == this.model.get('_items').length) {
 				this.setCompletionStatus();
 			}
 		}
-	},{
-    	template: 'tabs'
+		
 	});
 	
 	Adapt.register("tabs", Tabs);
 
 	return Tabs;
+	
 });
