@@ -26,7 +26,14 @@
 
 					<div class="tab-content-item-body">
 						<div class="tab-content-item-title-body">{{{body}}}</div>
+                        
 					</div>
+                    
+                    {{#if _graphic.src}}
+            <div class="tabs__content-item-graphic">
+              <img class="tabs__content-item-graphic-inner" src="{{{_graphic.src}}}" alt="{{{_graphic.alt}}}" tabindex="0"/>
+            </div>
+            {{/if}}
 
 				</div>
 			</div>
